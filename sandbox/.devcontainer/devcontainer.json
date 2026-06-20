@@ -1,0 +1,14 @@
+{
+  "name": "cc-sandbox",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "ollama",
+  "workspaceFolder": "/root",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code"
+      ]
+    }
+  },
+  "shutdownAction": "stopCompose"
+}

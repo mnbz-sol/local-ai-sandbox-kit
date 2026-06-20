@@ -1,0 +1,37 @@
+# docker-compose.yml — ローカルAIサンドボックス参照構成
+# 「サンドボックスで安全に始めるローカルAI入門」実践編 第7章 対応
+#
+# 起動: docker compose up -d
+# 終点: http://localhost:3000 (Open WebUI)
+#
+# 隔離設計:
+#   - ollama: 内部公開のみ（expose）。母艦から直接触れない
+#   - open-webui: localhost:3000 だけ公開。Ollama へは内部ネットワーク経由
+#   - volumes なし = 母艦のファイルシステムとは地続きにしない
+
+services:
+  ollama:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cc-sandbox:latest
+    container_name: cc-sandbox
+    hostname: cc-sandbox
+    networks: [cc-net]
+    expose: ["11434"]
+    restart: unless-stopped
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: cc-webui
+    depends_on: [ollama]
+    networks: [cc-net]
+    ports: ["3000:8080"]
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - WEBUI_AUTH=False
+    restart: unless-stopped
+
+networks:
+  cc-net:
+    driver: bridge
