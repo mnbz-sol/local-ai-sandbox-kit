@@ -12,10 +12,11 @@
 
 ```
 .
-├── scripts/           環境適性ゲート（preflight）
+├── scripts/           環境適性ゲート＋サイジング計測
 │   ├── preflight.ps1    Windows (PowerShell)
 │   ├── preflight.sh     Linux (Bash)
-│   └── preflight.zsh    macOS (Zsh)
+│   ├── preflight.zsh    macOS (Zsh)
+│   └── sizing-bench.sh  CPU推論サイジング計測
 ├── probe-kit/         検証プローブ
 │   ├── probe.sh         最小 4 テスト（第4章）
 │   └── probe-full.sh    拡張 12 テスト（7原則フルカバー）
@@ -30,7 +31,7 @@
 
 | フォルダ | 内容 | 対応章 |
 |---------|------|--------|
-| `scripts/` | PC が本書の要件を満たすか確認する環境ゲート | 第1章の前 |
+| `scripts/` | 環境ゲート（preflight）＋サイジング計測（sizing-bench） | 第1章の前・第5章〜 |
 | `probe-kit/` | 箱の隔離・権限・ネットワークを検証するプローブ | 第4章・第6章 |
 | `sandbox/` | docker-compose + devcontainer の参照構成 | 第7章 |
 
@@ -88,6 +89,29 @@ docker compose exec ollama ollama pull llama3.2:1b
 ```
 
 VS Code の Dev Containers で「Reopen in Container」すれば、CC ごと箱の中に入れます（第7章 §7.3）。
+
+### 4. サイジングを計測する（第5章〜）
+
+自分の環境で各モデルの生成速度（tok/s）とメモリ使用量を計測します。cc-sandbox 内で Ollama が起動済みであることが前提です。
+
+```bash
+docker cp scripts/sizing-bench.sh cc-sandbox:/tmp/
+docker exec cc-sandbox bash /tmp/sizing-bench.sh
+```
+
+第7章で devcontainer を組んだあとなら、箱の中の CC に「sizing-bench.sh を使ってモデルを計測して」と頼むだけで済みます。
+
+デフォルトでは `llama3.2:1b`, `llama3.2:3b`, `gemma3:4b`, `llama3.1:8b` の4モデルを順に計測します。引数でモデルを指定することもできます:
+
+```bash
+docker exec cc-sandbox bash /tmp/sizing-bench.sh llama3.2:1b phi4-mini
+```
+
+#### 参考値（著者環境）
+
+> 計測環境・日付を明記のうえ掲載予定。モデルのバージョンアップで数値は変わるため、あくまで特定時点での参考値です。自分の環境では sizing-bench.sh を実行して確認してください。
+
+<!-- sizing-results: evo-x1 計測後に埋める -->
 
 ## sandbox/ は「答え」ではありません
 
