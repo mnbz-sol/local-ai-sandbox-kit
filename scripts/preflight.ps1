@@ -103,7 +103,7 @@ if (-not $vtEnabled) {
 if ($vtEnabled) {
     Add-Check -Name "virtualization" -Value $vtLabel -Status "PASS"
 } else {
-    Add-Check -Name "virtualization" -Value "not detected" -Status "WARN" -Note "BIOS で VT-x/AMD-V を有効にしてください（第1章参照）"
+    Add-Check -Name "virtualization" -Value "not detected" -Status "WARN" -Note "自動検出できません。タスクマネージャー → CPU で「仮想化: 有効」を確認してください"
     if ($verdict -eq "PASS") { $verdict = "WARN" }
 }
 
