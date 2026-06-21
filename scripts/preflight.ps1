@@ -80,15 +80,28 @@ if ($freeGb -ge 20) {
 }
 
 # --- virtualization ---
+# VirtualizationFirmwareEnabled はハイパーバイザー稼働中に False を返すことがある。
+# HyperVisorPresent（Hyper-V/WSL2 稼働中）を併用して判定する。
 $vtEnabled = $false
+$vtLabel = "not detected"
 try {
     $cpuInfo = Get-CimInstance Win32_Processor | Select-Object -First 1
-    if ($null -ne $cpuInfo.VirtualizationFirmwareEnabled) {
-        $vtEnabled = $cpuInfo.VirtualizationFirmwareEnabled
+    if ($cpuInfo.VirtualizationFirmwareEnabled -eq $true) {
+        $vtEnabled = $true
+        $vtLabel = "enabled"
     }
 } catch {}
+if (-not $vtEnabled) {
+    try {
+        $hvPresent = (Get-CimInstance Win32_ComputerSystem).HypervisorPresent
+        if ($hvPresent -eq $true) {
+            $vtEnabled = $true
+            $vtLabel = "enabled (hypervisor active)"
+        }
+    } catch {}
+}
 if ($vtEnabled) {
-    Add-Check -Name "virtualization" -Value "enabled" -Status "PASS"
+    Add-Check -Name "virtualization" -Value $vtLabel -Status "PASS"
 } else {
     Add-Check -Name "virtualization" -Value "not detected" -Status "WARN" -Note "BIOS で VT-x/AMD-V を有効にしてください（第1章参照）"
     if ($verdict -eq "PASS") { $verdict = "WARN" }
