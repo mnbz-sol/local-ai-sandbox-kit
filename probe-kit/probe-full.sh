@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# probe-full.sh — 拡張プローブキット（12テスト・7原則フルカバー）
-# 「サンドボックスで安全に始めるローカルAI入門」companion repo
+# probe-full.sh — 拡張プローブキット(12テスト・7原則フルカバー)
+# "サンドボックスで安全に始めるローカルAI入門" companion repo
 #
 # 使い方:
 #   bash probe-full.sh [コンテナ名]
 #   既定: cc-sandbox
 #
-# probe.sh（4テスト）の上位互換。全7原則を網羅する。
+# probe.sh(4テスト)の上位互換。全7原則を網羅する。
 
 set -euo pipefail
 
@@ -25,10 +25,10 @@ if ! docker inspect --format '{{.State.Running}}' "$TARGET" 2>/dev/null | grep -
   exit 2
 fi
 
-printf '\033[1m拡張プローブ: %s（12テスト）\033[0m\n' "$TARGET"
+printf '\033[1m拡張プローブ: %s(12テスト)\033[0m\n' "$TARGET"
 
 # ============================================================
-# ①隔離（Isolation）
+# ①隔離(Isolation)
 # ============================================================
 
 header "P01: 母艦ファイルシステムの隔離 [①隔離]"
@@ -46,23 +46,23 @@ header "P02: ホスト名の分離 [①隔離]"
 CONTAINER_HOSTNAME=$(docker exec "$TARGET" hostname 2>/dev/null || true)
 HOST_HOSTNAME=$(hostname 2>/dev/null || true)
 if [ "$CONTAINER_HOSTNAME" = "$HOST_HOSTNAME" ]; then
-  warn "コンテナのホスト名が母艦と同一（$CONTAINER_HOSTNAME）"
+  warn "コンテナのホスト名が母艦と同一($CONTAINER_HOSTNAME)"
 else
-  pass "ホスト名が分離されている（container=$CONTAINER_HOSTNAME）"
+  pass "ホスト名が分離されている(container=$CONTAINER_HOSTNAME)"
 fi
 
 # ============================================================
-# ②最小権限（Least Privilege）
+# ②最小権限(Least Privilege)
 # ============================================================
 
 header "P03: 特権モード [②最小権限]"
 PRIVILEGED=$(docker inspect --format '{{.HostConfig.Privileged}}' "$TARGET" 2>/dev/null || echo "unknown")
 if [ "$PRIVILEGED" = "true" ]; then
-  fail "--privileged で起動されている（全 capability 付与）"
+  fail "--privileged で起動されている(全 capability 付与)"
 elif [ "$PRIVILEGED" = "false" ]; then
   pass "特権モードではない"
 else
-  skip "判定不能（inspect 失敗）"
+  skip "判定不能(inspect 失敗)"
 fi
 
 header "P04: Capability 制限 [②最小権限]"
@@ -71,13 +71,13 @@ if docker exec "$TARGET" sh -c 'command -v capsh >/dev/null 2>&1'; then
   DANGEROUS="cap_sys_admin\|cap_sys_ptrace\|cap_net_raw\|cap_sys_module"
   FOUND=$(echo "$CAPS" | grep -c "$DANGEROUS" || true)
   if [ "$FOUND" -gt 0 ]; then
-    fail "危険な capability が付与されている（$FOUND 件）"
+    fail "危険な capability が付与されている($FOUND 件)"
     echo "$CAPS" | grep "$DANGEROUS" | head -3
   else
     pass "危険な capability は付与されていない"
   fi
 else
-  skip "capsh 未インストール（apt install libcap2-bin）"
+  skip "capsh 未インストール(apt install libcap2-bin)"
 fi
 
 header "P05: PID namespace 隔離 [②最小権限]"
@@ -89,7 +89,7 @@ else
 fi
 
 # ============================================================
-# ④既定拒否（Default Deny）
+# ④既定拒否(Default Deny)
 # ============================================================
 
 header "P06: ボリュームマウント [④既定拒否]"
@@ -104,7 +104,7 @@ if [ "$USER_COUNT" = "0" ]; then
   pass "ユーザー定義のボリュームマウントなし"
   INTERNAL=$(echo "$ALL_DESTS" | grep -c '.' || true)
   if [ "$INTERNAL" -gt 0 ]; then
-    printf '       （Dev Container 内部マウント %d 件は除外）\n' "$INTERNAL"
+    printf '       (Dev Container 内部マウント %d 件は除外)\n' "$INTERNAL"
   fi
 else
   warn "ユーザー定義のボリュームが $USER_COUNT 件マウントされている"
@@ -115,50 +115,50 @@ header "P07: AppArmor / Seccomp プロファイル [④既定拒否]"
 APPARMOR=$(docker inspect --format '{{.AppArmorProfile}}' "$TARGET" 2>/dev/null || echo "unknown")
 SECCOMP=$(docker inspect --format '{{.HostConfig.SecurityOpt}}' "$TARGET" 2>/dev/null || echo "unknown")
 if [ "$APPARMOR" = "unconfined" ] || echo "$SECCOMP" | grep -q "unconfined"; then
-  warn "セキュリティプロファイルが unconfined（既定より緩い）"
+  warn "セキュリティプロファイルが unconfined(既定より緩い)"
 else
-  pass "セキュリティプロファイルが既定値（Docker デフォルト）"
+  pass "セキュリティプロファイルが既定値(Docker デフォルト)"
 fi
 
 # ============================================================
-# ⑤ネットワーク最小化（Minimal Network）
+# ⑤ネットワーク最小化(Minimal Network)
 # ============================================================
 
-header "P08: DNS 解決（egress） [⑤ネットワーク最小化]"
+header "P08: DNS 解決(egress) [⑤ネットワーク最小化]"
 if docker exec "$TARGET" sh -c 'command -v dig >/dev/null 2>&1'; then
   DNS=$(docker exec "$TARGET" dig +short +time=3 example.com 2>/dev/null || true)
   if [ -n "$DNS" ]; then
-    pass "DNS 解決可（egress 経路あり）: $DNS"
+    pass "DNS 解決可(egress 経路あり): $DNS"
   else
-    warn "DNS 解決不可（egress が遮断されている可能性）"
+    warn "DNS 解決不可(egress が遮断されている可能性)"
   fi
 else
-  skip "dig 未インストール（apt install dnsutils）"
+  skip "dig 未インストール(apt install dnsutils)"
 fi
 
 header "P09: HTTPS egress [⑤ネットワーク最小化]"
 if docker exec "$TARGET" sh -c 'command -v curl >/dev/null 2>&1'; then
   HTTP=$(docker exec "$TARGET" curl -s -o /dev/null -w "%{http_code}" --max-time 5 https://example.com 2>/dev/null || echo "000")
   if [ "$HTTP" = "200" ]; then
-    pass "HTTPS egress 可（外向き通信が通る）"
+    pass "HTTPS egress 可(外向き通信が通る)"
   else
-    warn "HTTPS egress 不可（HTTP $HTTP）"
+    warn "HTTPS egress 不可(HTTP $HTTP)"
   fi
 else
-  skip "curl 未インストール（apt install curl）"
+  skip "curl 未インストール(apt install curl)"
 fi
 
-header "P10: 公開ポート（ingress） [⑤ネットワーク最小化]"
+header "P10: 公開ポート(ingress) [⑤ネットワーク最小化]"
 PORTS=$(docker port "$TARGET" 2>/dev/null || true)
 if [ -z "$PORTS" ]; then
-  pass "公開ポートなし（外から箱へ入る口はない）"
+  pass "公開ポートなし(外から箱へ入る口はない)"
 else
   warn "公開ポートあり:"
   echo "$PORTS"
 fi
 
 # ============================================================
-# ⑥コード化（IaC）
+# ⑥コード化(IaC)
 # ============================================================
 
 header "P11: コンテナイメージの特定 [⑥コード化]"

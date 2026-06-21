@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# probe.sh — 最小プローブキット（4テスト）
-# 「サンドボックスで安全に始めるローカルAI入門」実践編 第4章 対応
+# probe.sh — 最小プローブキット(4テスト)
+# "サンドボックスで安全に始めるローカルAI入門" 実践編 第4章 対応
 #
 # 使い方:
 #   bash probe.sh [コンテナ名]
@@ -24,8 +24,8 @@ fi
 
 header "Probe: $TARGET"
 
-# --- P01: 隔離（母艦マウント） ---
-header "P01: 母艦が見えないか（隔離）"
+# --- P01: 隔離(母艦マウント) ---
+header "P01: 母艦が見えないか(隔離)"
 MOUNTS=$(docker exec "$TARGET" cat /proc/self/mountinfo 2>/dev/null || true)
 # Docker が全コンテナに自動注入する管理ファイルを除外
 FILTERED=$(echo "$MOUNTS" | grep -v '/etc/hostname\|/etc/hosts\|/etc/resolv.conf')
@@ -36,49 +36,49 @@ else
   pass "母艦のディレクトリはマウントされていない"
 fi
 
-# --- P07: 権限（capability） ---
-header "P07: 権限は絞られているか（最小権限）"
+# --- P07: 権限(capability) ---
+header "P07: 権限は絞られているか(最小権限)"
 if docker exec "$TARGET" sh -c 'command -v capsh >/dev/null 2>&1'; then
   CAPS=$(docker exec "$TARGET" capsh --print 2>/dev/null || true)
   if echo "$CAPS" | grep -q "cap_sys_admin"; then
-    fail "cap_sys_admin が付与されている（--privileged の可能性）"
+    fail "cap_sys_admin が付与されている(--privileged の可能性)"
   else
-    pass "特権モードではない（capability が制限されている）"
+    pass "特権モードではない(capability が制限されている)"
   fi
   echo "$CAPS" | grep "Current:" | head -1
 else
-  warn "capsh 未インストール（apt install libcap2-bin で導入可）"
+  warn "capsh 未インストール(apt install libcap2-bin で導入可)"
 fi
 
-# --- P08: ネットワーク（DNS/HTTP） ---
-header "P08: 通信経路（ネットワーク最小化）"
+# --- P08: ネットワーク(DNS/HTTP) ---
+header "P08: 通信経路(ネットワーク最小化)"
 if docker exec "$TARGET" sh -c 'command -v dig >/dev/null 2>&1'; then
   DNS=$(docker exec "$TARGET" dig +short example.com 2>/dev/null || true)
   if [ -n "$DNS" ]; then
-    pass "DNS 解決可（egress 経路あり）: $DNS"
+    pass "DNS 解決可(egress 経路あり): $DNS"
   else
-    warn "DNS 解決不可（egress が遮断されている可能性）"
+    warn "DNS 解決不可(egress が遮断されている可能性)"
   fi
 else
-  warn "dig 未インストール（apt install dnsutils で導入可）"
+  warn "dig 未インストール(apt install dnsutils で導入可)"
 fi
 
 if docker exec "$TARGET" sh -c 'command -v curl >/dev/null 2>&1'; then
   HTTP=$(docker exec "$TARGET" curl -s -o /dev/null -w "%{http_code}" --max-time 5 https://example.com 2>/dev/null || echo "000")
   if [ "$HTTP" = "200" ]; then
-    pass "HTTPS egress 可（外向き通信が通る）"
+    pass "HTTPS egress 可(外向き通信が通る)"
   else
-    warn "HTTPS egress 不可（HTTP $HTTP）"
+    warn "HTTPS egress 不可(HTTP $HTTP)"
   fi
 else
-  warn "curl 未インストール（apt install curl で導入可）"
+  warn "curl 未インストール(apt install curl で導入可)"
 fi
 
 # --- P11: ポート公開 ---
 header "P11: 公開ポート"
 PORTS=$(docker port "$TARGET" 2>/dev/null || true)
 if [ -z "$PORTS" ]; then
-  pass "公開ポートなし（外から箱へ入る口はない）"
+  pass "公開ポートなし(外から箱へ入る口はない)"
 else
   warn "公開ポートあり:"
   echo "$PORTS"
