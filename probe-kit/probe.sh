@@ -27,9 +27,11 @@ header "Probe: $TARGET"
 # --- P01: 隔離（母艦マウント） ---
 header "P01: 母艦が見えないか（隔離）"
 MOUNTS=$(docker exec "$TARGET" cat /proc/self/mountinfo 2>/dev/null || true)
-if echo "$MOUNTS" | grep -qi "/mnt/c\|/mnt/d\|/host\|/Users\|/home"; then
+# Docker が全コンテナに自動注入する管理ファイルを除外
+FILTERED=$(echo "$MOUNTS" | grep -v '/etc/hostname\|/etc/hosts\|/etc/resolv.conf')
+if echo "$FILTERED" | grep -qi "/mnt/c\|/mnt/d\|/host/\|/Users/\|/home/"; then
   fail "母艦側のパスがマウントされている"
-  echo "$MOUNTS" | grep -i "/mnt/c\|/mnt/d\|/host\|/Users\|/home" | head -3
+  echo "$FILTERED" | grep -i "/mnt/c\|/mnt/d\|/host/\|/Users/\|/home/" | head -3
 else
   pass "母艦のディレクトリはマウントされていない"
 fi

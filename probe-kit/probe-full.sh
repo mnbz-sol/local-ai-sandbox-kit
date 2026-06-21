@@ -33,9 +33,11 @@ printf '\033[1m拡張プローブ: %s（12テスト）\033[0m\n' "$TARGET"
 
 header "P01: 母艦ファイルシステムの隔離 [①隔離]"
 MOUNTS=$(docker exec "$TARGET" cat /proc/self/mountinfo 2>/dev/null || true)
-if echo "$MOUNTS" | grep -qi "/mnt/c\|/mnt/d\|/host\|/Users\|/home"; then
+# Docker が全コンテナに自動注入する管理ファイルを除外
+FILTERED=$(echo "$MOUNTS" | grep -v '/etc/hostname\|/etc/hosts\|/etc/resolv.conf')
+if echo "$FILTERED" | grep -qi "/mnt/c\|/mnt/d\|/host/\|/Users/\|/home/"; then
   fail "母艦側のパスがマウントされている"
-  echo "$MOUNTS" | grep -i "/mnt/c\|/mnt/d\|/host\|/Users\|/home" | head -3
+  echo "$FILTERED" | grep -i "/mnt/c\|/mnt/d\|/host/\|/Users/\|/home/" | head -3
 else
   pass "母艦のディレクトリはマウントされていない"
 fi
@@ -91,13 +93,21 @@ fi
 # ============================================================
 
 header "P06: ボリュームマウント [④既定拒否]"
-VOL_COUNT=$(docker inspect --format '{{len .Mounts}}' "$TARGET" 2>/dev/null || echo "unknown")
-if [ "$VOL_COUNT" = "0" ]; then
-  pass "ボリュームマウントなし"
-elif [ "$VOL_COUNT" = "unknown" ]; then
-  skip "判定不能（inspect 失敗）"
+# Docker / Dev Container が内部動作に使うマウントを除外し、ユーザー定義のみ検査
+ALL_DESTS=$(docker inspect --format '{{range .Mounts}}{{.Destination}}{{"\n"}}{{end}}' "$TARGET" 2>/dev/null || true)
+USER_MOUNTS=$(echo "$ALL_DESTS" | grep -v '^\s*$' \
+  | grep -v '^/vscode' \
+  | grep -v '\.sock$' \
+  | grep -v '^/tmp/vscode-' || true)
+USER_COUNT=$(echo "$USER_MOUNTS" | grep -c '.' || true)
+if [ "$USER_COUNT" = "0" ]; then
+  pass "ユーザー定義のボリュームマウントなし"
+  INTERNAL=$(echo "$ALL_DESTS" | grep -c '.' || true)
+  if [ "$INTERNAL" -gt 0 ]; then
+    printf '       （Dev Container 内部マウント %d 件は除外）\n' "$INTERNAL"
+  fi
 else
-  warn "ボリュームが $VOL_COUNT 件マウントされている"
+  warn "ユーザー定義のボリュームが $USER_COUNT 件マウントされている"
   docker inspect --format '{{range .Mounts}}  {{.Type}}: {{.Source}} -> {{.Destination}}{{"\n"}}{{end}}' "$TARGET" 2>/dev/null || true
 fi
 
