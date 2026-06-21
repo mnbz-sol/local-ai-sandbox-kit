@@ -1,10 +1,12 @@
-# preflight.ps1 — Windows 環境適性ゲート
+﻿# preflight.ps1 — Windows 環境適性ゲート
 # 「サンドボックスで安全に始めるローカルAI入門」実践編 第1章の前に実行
 #
 # 使い方:
 #   powershell -ExecutionPolicy Bypass -File preflight.ps1
 
 $ErrorActionPreference = 'SilentlyContinue'
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
 
 Write-Host ""
 Write-Host "=== preflight: 環境適性チェック (Windows) ===" -ForegroundColor Cyan
