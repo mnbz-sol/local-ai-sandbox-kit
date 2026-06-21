@@ -95,13 +95,17 @@ if ($vtEnabled) {
 }
 
 # --- wsl ---
+# wsl.exe --version は UTF-16 LE で出力するため、直接キャプチャすると文字化けする。
+# 一時ファイル経由で Unicode として読み直す。
 $wslVersion = ""
 try {
-    $wslOut = wsl --version 2>&1
-    if ($LASTEXITCODE -eq 0) {
-        $wslLine = ($wslOut | Select-String "WSL" | Select-Object -First 1).ToString().Trim()
-        $wslVersion = $wslLine
-    }
+    $null = Get-Command wsl.exe -ErrorAction Stop
+    $tmp = Join-Path $env:TEMP "preflight_wsl.txt"
+    Start-Process -FilePath wsl.exe -ArgumentList "--version" -NoNewWindow -Wait -RedirectStandardOutput $tmp
+    $raw = [System.IO.File]::ReadAllText($tmp, [System.Text.Encoding]::Unicode)
+    Remove-Item $tmp -Force -ErrorAction SilentlyContinue
+    $wslLine = ($raw -split "`r?`n" | Where-Object { $_ -match 'WSL' } | Select-Object -First 1)
+    if ($wslLine) { $wslVersion = $wslLine.Trim() -replace '\s+', ' ' }
 } catch {}
 if ($wslVersion) {
     Add-Check -Name "wsl" -Value $wslVersion -Status "PASS"
