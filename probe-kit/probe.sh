@@ -40,12 +40,13 @@ fi
 header "P07: 権限は絞られているか(最小権限)"
 if docker exec "$TARGET" sh -c 'command -v capsh >/dev/null 2>&1'; then
   CAPS=$(docker exec "$TARGET" capsh --print 2>/dev/null || true)
-  if echo "$CAPS" | grep -q "cap_sys_admin"; then
+  CURRENT=$(echo "$CAPS" | grep "^Current:" | head -1)
+  if echo "$CURRENT" | grep -q "cap_sys_admin"; then
     fail "cap_sys_admin が付与されている(--privileged の可能性)"
   else
     pass "特権モードではない(capability が制限されている)"
   fi
-  echo "$CAPS" | grep "Current:" | head -1
+  echo "  $CURRENT"
 else
   warn "capsh 未インストール(apt install libcap2-bin で導入可)"
 fi
