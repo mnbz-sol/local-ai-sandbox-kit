@@ -1,5 +1,5 @@
 # docker-compose.yml — ローカルAIサンドボックス参照構成
-# 「サンドボックスで安全に始めるローカルAI入門」実践編 第7章 対応
+# 「サンドボックスで安全に始めるローカルAI入門」実践編 第6章 対応
 #
 # 起動: docker compose up -d
 # 終点: http://localhost:3000 (Open WebUI)
@@ -19,6 +19,8 @@ services:
     hostname: cc-sandbox
     networks: [cc-net]
     expose: ["11434"]
+    environment:
+      - OLLAMA_HOST=0.0.0.0
     restart: unless-stopped
 
   open-webui:
