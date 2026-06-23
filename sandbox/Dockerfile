@@ -1,5 +1,5 @@
 # Dockerfile — cc-sandbox (Ubuntu 24.04 + Ollama)
-# 「サンドボックスで安全に始めるローカルAI入門」実践編 第7章 対応
+# 「サンドボックスで安全に始めるローカルAI入門」実践編 第6章 対応
 #
 # CPU 経路で動作する最小構成。GPU パススルーは扱わない。
 
@@ -9,6 +9,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
        curl \
        ca-certificates \
+       zstd \
     && rm -rf /var/lib/apt/lists/*
 
 # Ollama をインストール
