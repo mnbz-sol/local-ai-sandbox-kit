@@ -12,19 +12,19 @@ printf '\n\033[1;36m=== preflight: 環境適性チェック (macOS) ===\033[0m\n
 VERDICT="PASS"
 
 check() {
-  local name="$1" value="$2" status="$3" note="${4:-}"
+  local name="$1" value="$2" result="$3" note="${4:-}"
   local color
-  case "$status" in
+  case "$result" in
     PASS) color="\033[32m" ;;
     WARN) color="\033[33m" ;;
     FAIL) color="\033[31m" ;;
     *)    color="\033[90m" ;;
   esac
-  printf '  %-20s %-30s [%b%s\033[0m]\n' "$name" "$value" "$color" "$status"
+  printf '  %-20s %-30s [%b%s\033[0m]\n' "$name" "$value" "$color" "$result"
   [[ -n "$note" ]] && printf '  %20s %s\n' "" "$note"
 
-  if [[ "$status" = "FAIL" ]]; then VERDICT="FAIL"; fi
-  if [[ "$status" = "WARN" && "$VERDICT" = "PASS" ]]; then VERDICT="WARN"; fi
+  if [[ "$result" = "FAIL" ]]; then VERDICT="FAIL"; fi
+  if [[ "$result" = "WARN" && "$VERDICT" = "PASS" ]]; then VERDICT="WARN"; fi
 }
 
 # --- arch ---
