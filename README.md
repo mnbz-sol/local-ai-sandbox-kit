@@ -20,7 +20,7 @@
 ├── probe-kit/         検証プローブ
 │   ├── probe.sh         最小 4 テスト（第4章）
 │   └── probe-full.sh    拡張 12 テスト（7原則フルカバー）
-├── sandbox/           参照構成（第7章）
+├── sandbox/           参照構成（第6章）
 │   ├── docker-compose.yml
 │   ├── Dockerfile
 │   └── .devcontainer/
@@ -33,7 +33,7 @@
 |---------|------|--------|
 | `scripts/` | 環境ゲート（preflight）＋サイジング計測（sizing-bench） | 第1章の前・第5章〜 |
 | `probe-kit/` | 箱の隔離・権限・ネットワークを検証するプローブ | 第4章・第6章 |
-| `sandbox/` | docker-compose + devcontainer の参照構成 | 第7章 |
+| `sandbox/` | docker-compose + devcontainer の参照構成 | 第6章 |
 
 ## 使い方
 
@@ -72,9 +72,9 @@ bash probe-kit/probe-full.sh cc-sandbox
 
 引数を省略すると `cc-sandbox` を対象にします。
 
-### 3. 参照構成を使う（第7章）
+### 3. 参照構成を使う（第6章）
 
-`sandbox/` は、第7章で CC（Claude Code）に生成させた構成の **参照実装** です。
+`sandbox/` は、第6章で CC（Claude Code）に生成させた構成の **参照実装** です。
 
 ```bash
 cd sandbox
@@ -88,7 +88,7 @@ docker compose up -d
 docker compose exec ollama ollama pull llama3.2:1b
 ```
 
-VS Code の Dev Containers で「Reopen in Container」すれば、CC ごと箱の中に入れます（第7章 §7.3）。
+VS Code の Dev Containers で「Reopen in Container」すれば、CC ごと箱の中に入れます（第6章 §7.3）。
 
 ### 4. サイジングを計測する（第5章〜）
 
@@ -99,7 +99,7 @@ docker cp scripts/sizing-bench.sh cc-sandbox:/tmp/
 docker exec cc-sandbox bash /tmp/sizing-bench.sh
 ```
 
-第7章で devcontainer を組んだあとなら、箱の中の CC に「sizing-bench.sh を使ってモデルを計測して」と頼むだけで済みます。
+第6章で devcontainer を組んだあとなら、箱の中の CC に「sizing-bench.sh を使ってモデルを計測して」と頼むだけで済みます。
 
 デフォルトでは `llama3.2:1b`, `llama3.2:3b`, `gemma3:4b`, `llama3.1:8b` の4モデルを順に計測します。引数でモデルを指定することもできます:
 
@@ -109,9 +109,20 @@ docker exec cc-sandbox bash /tmp/sizing-bench.sh llama3.2:1b phi4-mini
 
 #### 参考値（著者環境）
 
-> 計測環境・日付を明記のうえ掲載予定。モデルのバージョンアップで数値は変わるため、あくまで特定時点での参考値です。自分の環境では sizing-bench.sh を実行して確認してください。
+モデルのバージョンアップで数値は変わるため、あくまで特定時点での参考値です。自分の環境では `sizing-bench.sh` を実行して確認してください。
 
-<!-- sizing-results: evo-x1 計測後に埋める -->
+**Apple Silicon Mac — M1 MacBook Pro 16GB / macOS Tahoe / Docker Desktop（2026-06-28）**
+
+| model | params | tok/s | tokens | model\_mem |
+|-------|--------|------:|-------:|-----------:|
+| llama3.2:1b | 1B | 20.4 | 87 | 1,715 MB |
+| llama3.2:3b | 3B | 15.7 | 84 | 2,751 MB |
+| gemma3:4b | 4B | 12.2 | 73 | 3,273 MB |
+| llama3.1:8b | 8B | 7.7 | 96 | 5,317 MB |
+
+> コンテナ可視メモリ 8GB・CPU 推論。8GB コンテナでは llama3.1:8b（5.3GB）が実用上限に近く、インタラクティブ用途なら 3B〜4B あたりが速度とメモリのバランス点。
+
+<!-- sizing-results: Windows (evo-x1) / Linux 計測後に追加 -->
 
 ## 動作確認の範囲について
 
