@@ -99,7 +99,6 @@ header "P06: ボリュームマウント [④既定拒否]"
 ALL_DESTS=$(docker inspect --format '{{range .Mounts}}{{.Destination}}{{"\n"}}{{end}}' "$TARGET" 2>/dev/null || true)
 USER_MOUNTS=$(echo "$ALL_DESTS" | grep -v '^\s*$' \
   | grep -v '^/vscode' \
-  | grep -v '\.sock$' \
   | grep -v '^/tmp/vscode-' || true)
 USER_COUNT=$(echo "$USER_MOUNTS" | grep -c '.' || true)
 if [ "$USER_COUNT" = "0" ]; then
