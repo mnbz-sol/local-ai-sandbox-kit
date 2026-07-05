@@ -122,7 +122,18 @@ docker exec cc-sandbox bash /tmp/sizing-bench.sh llama3.2:1b phi4-mini
 
 > コンテナ可視メモリ 8GB・CPU 推論。8GB コンテナでは llama3.1:8b（5.3GB）が実用上限に近く、インタラクティブ用途なら 3B〜4B あたりが速度とメモリのバランス点。
 
-<!-- sizing-results: Windows (evo-x1) / Linux 計測後に追加 -->
+**Linux — EVO-X1 (AMD Ryzen AI 9 HX 370 w/ Radeon 890M) / Ubuntu / Docker Engine（2026-07-05）**
+
+| model | params | tok/s | tokens | model\_mem |
+|-------|--------|------:|-------:|-----------:|
+| llama3.2:1b | 1B | 47.9 | 106 | 1,448 MB |
+| llama3.2:3b | 3B | 33.1 | 85 | 2,442 MB |
+| gemma3:4b | 4B | 25.0 | 68 | 2,748 MB |
+| llama3.1:8b | 8B | 15.7 | 93 | 5,317 MB |
+
+> コンテナ可視メモリ 27GB・CPU 推論。ネイティブ Docker Engine（Docker Desktop 非経由）のためか、同クラスのモデルで Mac 環境よりおおむね2倍前後の tok/s が出ている。
+
+<!-- sizing-results: Windows (evo-x1) 計測後に追加 -->
 
 ## 動作確認の範囲について
 
