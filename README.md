@@ -18,8 +18,10 @@
 │   ├── preflight.zsh    macOS (Zsh)
 │   └── sizing-bench.sh  CPU推論サイジング計測
 ├── probe-kit/         検証プローブ
-│   ├── probe.sh         最小 4 テスト（第4章）
-│   └── probe-full.sh    拡張 12 テスト（7原則フルカバー）
+│   ├── probe.sh           最小 4 テスト（Windows / Linux）
+│   ├── probe-full.sh      拡張 12 テスト（Windows / Linux）
+│   ├── probe-mac.sh       最小 4 テスト（macOS）
+│   └── probe-full-mac.sh  拡張 12 テスト（macOS）
 ├── sandbox/           参照構成（第6章）
 │   ├── docker-compose.yml
 │   ├── Dockerfile
@@ -62,12 +64,24 @@ zsh scripts/preflight.zsh
 
 第4章で手打ちした 4 つのコマンドをスクリプト化したものです。箱（コンテナ）が隔離されているかを一括チェックします。
 
+**Windows / Linux:**
+
 ```bash
 # 最小プローブ（4テスト）
 bash probe-kit/probe.sh cc-sandbox
 
 # 拡張プローブ（12テスト・7原則フルカバー）
 bash probe-kit/probe-full.sh cc-sandbox
+```
+
+**macOS:**
+
+```bash
+# 最小プローブ（4テスト）
+bash probe-kit/probe-mac.sh cc-sandbox
+
+# 拡張プローブ（12テスト・7原則フルカバー）
+bash probe-kit/probe-full-mac.sh cc-sandbox
 ```
 
 引数を省略すると `cc-sandbox` を対象にします。
@@ -88,7 +102,7 @@ docker compose up -d
 docker compose exec ollama ollama pull llama3.2:1b
 ```
 
-VS Code の Dev Containers で「Reopen in Container」すれば、CC ごと箱の中に入れます（第6章 §7.3）。
+VS Code の Dev Containers で「Reopen in Container」すれば、CC ごと箱の中に入れます（第6章 §6.3）。
 
 ### 4. サイジングを計測する（第5章〜）
 
@@ -139,7 +153,9 @@ docker exec cc-sandbox bash /tmp/sizing-bench.sh llama3.2:1b phi4-mini
 
 このリポジトリのスクリプト（`scripts/`・`probe-kit/`）および参照構成（`sandbox/`）は、**本書の説明で使用する限定的な環境で動作を確認したもの**です。すべての OS バージョン、Docker バージョン、コンテナ構成、ネットワーク環境において正しい結果を返すことを保証するものではありません。
 
-特に `probe-kit/` の検証プローブは、本書が扱う標準構成（Ubuntu 24.04 ベースの Docker コンテナ、Docker Desktop on WSL2）を前提としています。異なる構成で実行した場合、偽陽性（問題がないのに FAIL と判定される）や偽陰性（問題があるのに PASS と判定される）が生じる可能性があります。プローブの結果は、セキュリティ上の判断の**参考情報**として扱い、唯一の根拠としないでください。
+特に `probe-kit/` の検証プローブは、本書が扱う標準構成（Ubuntu 24.04 ベースの Docker コンテナを、Windows の Docker Desktop on WSL2、macOS の Docker Desktop、または Ubuntu の Docker Engine で動かす構成）を前提としています。異なる構成で実行した場合、偽陽性（問題がないのに FAIL と判定される）や偽陰性（問題があるのに PASS と判定される）が生じる可能性があります。プローブの結果は、セキュリティ上の判断の**参考情報**として扱い、唯一の根拠としないでください。
+
+また、`probe.sh` と `probe-full.sh` は母艦側のディレクトリが持ち込まれていないかを調べるため、マウント情報に含まれる `/home/` も検出対象にしています。rootless Docker や、コンテナ内の正当な用途で `/home/` 配下をマウントする構成では、母艦のファイルが露出していなくても FAIL になる場合があります。該当する場合は、表示されたマウント元とマウント先を確認して判定してください。
 
 問題を発見した場合は [Issues](../../issues) で報告いただけると助かります。
 
