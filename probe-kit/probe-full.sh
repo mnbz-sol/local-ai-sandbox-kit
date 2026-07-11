@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# probe-full.sh — 拡張プローブキット(12テスト・7原則フルカバー)
+# probe-full.sh — 拡張プローブキット(12テスト・自動検査可能な5原則をカバー)
 # "サンドボックスで安全に始めるローカルAI入門" companion repo
 #
 # 使い方:
 #   bash probe-full.sh [コンテナ名]
 #   既定: cc-sandbox
 #
-# probe.sh(4テスト)の上位互換。全7原則を網羅する。
+# probe.sh(4テスト)の上位互換。7原則のうち自動検査できる5原則を扱う。
 
 set -euo pipefail
 
@@ -35,9 +35,9 @@ header "P01: 母艦ファイルシステムの隔離 [①隔離]"
 MOUNTS=$(docker exec "$TARGET" cat /proc/self/mountinfo 2>/dev/null || true)
 # Docker が全コンテナに自動注入する管理ファイルを除外
 FILTERED=$(echo "$MOUNTS" | grep -v '/etc/hostname\|/etc/hosts\|/etc/resolv.conf')
-if echo "$FILTERED" | grep -qi "/mnt/c\|/mnt/d\|/host/\|/Users/\|/home/"; then
+if echo "$FILTERED" | grep -qi "/mnt/c\|/mnt/d\|/host\|/Users/\|/home/"; then
   fail "母艦側のパスがマウントされている"
-  echo "$FILTERED" | grep -i "/mnt/c\|/mnt/d\|/host/\|/Users/\|/home/" | head -3
+  echo "$FILTERED" | grep -i "/mnt/c\|/mnt/d\|/host\|/Users/\|/home/" | head -3
 else
   pass "母艦のディレクトリはマウントされていない"
 fi

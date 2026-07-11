@@ -70,7 +70,7 @@ zsh scripts/preflight.zsh
 # 最小プローブ（4テスト）
 bash probe-kit/probe.sh cc-sandbox
 
-# 拡張プローブ（12テスト・7原則フルカバー）
+# 拡張プローブ（12テスト・自動検査可能な5原則をカバー）
 bash probe-kit/probe-full.sh cc-sandbox
 ```
 
@@ -80,7 +80,7 @@ bash probe-kit/probe-full.sh cc-sandbox
 # 最小プローブ（4テスト）
 bash probe-kit/probe-mac.sh cc-sandbox
 
-# 拡張プローブ（12テスト・7原則フルカバー）
+# 拡張プローブ（12テスト・自動検査可能な5原則をカバー）
 bash probe-kit/probe-full-mac.sh cc-sandbox
 ```
 

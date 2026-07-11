@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# probe-full-mac.sh — 拡張プローブキット(12テスト・7原則フルカバー) macOS 版
+# probe-full-mac.sh — 拡張プローブキット(12テスト・自動検査可能な5原則をカバー) macOS 版
 # "サンドボックスで安全に始めるローカルAI入門" companion repo
 #
 # 使い方:
 #   bash probe-full-mac.sh [コンテナ名]
 #   既定: cc-sandbox
 #
-# probe-mac.sh(4テスト)の上位互換。全7原則を網羅する。
+# probe-mac.sh(4テスト)の上位互換。7原則のうち自動検査できる5原則を扱う。
 # Windows/WSL 版(probe-full.sh)との違い:
 #   P01 の隔離テストを docker inspect 方式に変更。
 
@@ -112,7 +112,7 @@ else
   docker inspect --format '{{range .Mounts}}  {{.Type}}: {{.Source}} -> {{.Destination}}{{"\n"}}{{end}}' "$TARGET" 2>/dev/null || true
 fi
 
-header "P07: AppArmor / Seccomp プロファイル [④既定拒否]"
+header "P07: Seccomp プロファイル [④既定拒否]"
 APPARMOR=$(docker inspect --format '{{.AppArmorProfile}}' "$TARGET" 2>/dev/null || echo "unknown")
 SECCOMP=$(docker inspect --format '{{.HostConfig.SecurityOpt}}' "$TARGET" 2>/dev/null || echo "unknown")
 if [ "$APPARMOR" = "unconfined" ] || echo "$SECCOMP" | grep -q "unconfined"; then
