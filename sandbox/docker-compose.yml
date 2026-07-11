@@ -15,6 +15,7 @@ services:
       context: .
       dockerfile: Dockerfile
     image: cc-sandbox:latest
+    pull_policy: build
     container_name: cc-sandbox
     hostname: cc-sandbox
     networks: [cc-net]
