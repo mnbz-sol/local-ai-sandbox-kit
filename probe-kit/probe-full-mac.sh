@@ -69,7 +69,7 @@ header "P04: Capability 制限 [②最小権限]"
 if docker exec "$TARGET" sh -c 'command -v capsh >/dev/null 2>&1'; then
   CAPS=$(docker exec "$TARGET" capsh --print 2>/dev/null || true)
   CURRENT=$(echo "$CAPS" | grep "^Current:" | head -1)
-  DANGEROUS="cap_sys_admin\|cap_sys_ptrace\|cap_sys_module"
+  DANGEROUS="cap_sys_admin\|cap_sys_ptrace\|cap_sys_module\|=ep"
   FOUND=$(echo "$CURRENT" | grep -c "$DANGEROUS" || true)
   if [ "$FOUND" -gt 0 ]; then
     fail "危険な capability が付与されている(Current に検出)"
