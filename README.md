@@ -147,7 +147,16 @@ docker exec cc-sandbox bash /tmp/sizing-bench.sh llama3.2:1b phi4-mini
 
 > コンテナ可視メモリ 27GB・CPU 推論。ネイティブ Docker Engine（Docker Desktop 非経由）のためか、同クラスのモデルで Mac 環境よりおおむね2倍前後の tok/s が出ている。
 
-<!-- sizing-results: Windows (evo-x1) 計測後に追加 -->
+**Windows — Surface Pro 11 (Snapdragon X Plus) 16GB / Windows 11 / Docker Desktop (WSL2)（2026-07-12）**
+
+| model | params | tok/s | tokens | model\_mem |
+|-------|--------|------:|-------:|-----------:|
+| llama3.2:1b | 1B | 32.0 | 100 | 1,715 MB |
+| llama3.2:3b | 3B | 9.8 | 91 | 2,751 MB |
+| gemma3:4b | 4B | 21.5 | 61 | 3,273 MB |
+| llama3.1:8b | 8B | 7.2 | 108 | 5,317 MB |
+
+> コンテナ可視メモリ 8GB・CPU 推論（Snapdragon X Plus、Arm64）。`llama3.2:3b` が `gemma3:4b` より遅い逆転が見られた——Arm64 環境でのモデルごとの最適化差（量子化・実行カーネルの実装差）による可能性がある。
 
 ## 動作確認の範囲について
 
