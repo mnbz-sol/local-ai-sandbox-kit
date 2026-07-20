@@ -41,8 +41,8 @@ header "P07: 権限は絞られているか(最小権限)"
 if docker exec "$TARGET" sh -c 'command -v capsh >/dev/null 2>&1'; then
   CAPS=$(docker exec "$TARGET" capsh --print 2>/dev/null || true)
   CURRENT=$(echo "$CAPS" | grep "^Current:" | head -1)
-  if echo "$CURRENT" | grep -qE "cap_sys_admin|=ep"; then
-    fail "危険な capability が付与されている(cap_sys_admin または Current: =ep を検出)"
+  if echo "$CURRENT" | grep -qE "cap_sys_admin|^Current: *=ep *\$"; then
+    fail "危険な capability が付与されている(cap_sys_admin または Current: =ep 単体を検出)"
   else
     pass "特権モードではない(capability が制限されている)"
   fi
